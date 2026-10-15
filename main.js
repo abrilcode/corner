@@ -237,6 +237,7 @@ function itemMenu(id) {
   if (!it) return;
   const send = (action, extra = {}) => win.webContents.send("corner:action", { action, id, ...extra });
   const tpl = [
+    ...(it.done ? [] : [{ label: it.focusAt ? "Stop working on it" : "Start working on it", click: () => send("changed", change({ type: "focus", id })) }]),
     { label: "Edit", click: () => send("edit") },
     { label: "Add a link…", click: () => send("link") },
     ...(it.links.length ? [{ label: "Remove link", submenu: it.links.map((l) => ({ label: l.label || l.url, click: () => send("changed", change({ type: "unlink", id, url: l.url })) })) }] : []),
@@ -418,7 +419,7 @@ app.whenReady().then(() => {
 
   loadUi();
   if (SHOT) {
-    ui = { ...ui, bounds: null, mini: process.env.CORNER_SHOT_STATE === "mini", height: Number(process.env.CORNER_SHOT_HEIGHT) || HEIGHT, theme: "light" };
+    ui = { ...ui, bounds: null, mini: /mini$/.test(process.env.CORNER_SHOT_STATE || ""), height: Number(process.env.CORNER_SHOT_HEIGHT) || HEIGHT, theme: "light" };
   }
   if (process.env.CORNER_THEME) ui.theme = process.env.CORNER_THEME;
   nativeTheme.themeSource = ui.theme;

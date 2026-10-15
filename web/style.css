@@ -72,7 +72,21 @@ input, textarea { font: inherit; color: inherit; }
 .bar > * { -webkit-app-region: no-drag; }
 .bar .mark, .bar .count, .bar .spacer { -webkit-app-region: drag; }
 .mark { font: italic 400 17px/1 var(--serif); letter-spacing: 0.005em; }
-.count { color: var(--ink-3); font-size: 11.5px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.count { color: var(--ink-3); font-size: 11.5px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.count.now {
+  -webkit-app-region: no-drag; cursor: pointer; color: var(--ink-2);
+  display: flex; align-items: center; gap: 6px; flex: 0 1 auto;
+}
+.count.now:hover { color: var(--ink); }
+.now-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* "Working on it": a slow ring in the accent colour. */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 10px; height: 10px; flex: 0 0 10px; border-radius: 50%;
+  border: 1.25px solid var(--accent-soft); border-top-color: var(--accent); border-right-color: var(--accent);
+  animation: spin 1.6s linear infinite;
+}
 .spacer { flex: 1; align-self: stretch; }
 .icon {
   width: 26px; height: 26px; border-radius: var(--r);
@@ -191,6 +205,26 @@ a.name .arrow { font-weight: 300; color: var(--ink-3); margin-left: 3px; font-si
 }
 .check:hover { border-color: var(--ink); }
 .item.done .check { background: var(--done); border-color: var(--done); }
+.check.spin { border-color: var(--accent-soft); }
+.check.spin::before {
+  content: ""; position: absolute; inset: -1.25px; border-radius: 50%;
+  border: 1.25px solid transparent; border-top-color: var(--accent); border-right-color: var(--accent);
+  animation: spin 1.6s linear infinite;
+}
+.check.spin:hover { border-color: var(--ink); }
+.check.spin:hover::before { animation-play-state: paused; }
+.item.working { background: var(--accent-soft); }
+.item.working:hover { background: var(--accent-soft); }
+.item.working .text { font-weight: 400; }
+.item.working .meta { color: var(--accent); }
+.go {
+  width: 20px; height: 20px; flex: 0 0 20px; margin: -1px -4px 0 0; border-radius: 4px;
+  display: grid; place-items: center; color: var(--ink-3); visibility: hidden;
+}
+.go svg { width: 10px; height: 10px; fill: currentColor; stroke: currentColor; stroke-width: 1.3; stroke-linejoin: round; }
+.item.working .go svg { fill: none; }
+.item:hover .go, .item.working .go { visibility: visible; }
+.go:hover { color: var(--ink); background: var(--paper); }
 .item.done .check::after {
   content: ""; position: absolute; left: 3.6px; top: 1.2px; width: 3px; height: 6px;
   border: solid var(--paper); border-width: 0 1.4px 1.4px 0; transform: rotate(45deg);

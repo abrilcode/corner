@@ -56,7 +56,13 @@ function linksHTML(links) {
   return `<div class="links">${links.map((l) => `<button class="link" data-open="${esc(l.url)}" title="${esc(l.url)}">${isFile(l.url) ? ICON.file : ICON.link}<span>${esc(l.label || linkLabel(l.url))}</span></button>`).join("")}</div>`;
 }
 
-const rank = (i) => ({ P0: 0, P1: 1 })[i.priority] ?? 2;
+const rank = (i) => (i.focusAt && !i.done ? -1 : ({ P0: 0, P1: 1 })[i.priority] ?? 2); // the item in focus, P0, P1, the rest
+const ICON_GO = '<svg viewBox="0 0 10 10"><path d="M3.2 2.2v5.6L7.8 5z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 10 10"><path d="M3.4 2.4v5.2M6.6 2.4v5.2"/></svg>';
+const since = (iso) => {
+  const min = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+  return min < 1 ? "just started" : min < 60 ? `${min} min` : `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")}`;
+};
 const prioHTML = (p, id) => (p ? `<button class="prio ${p.toLowerCase()}" ${id ? `data-prio="${esc(id)}" title="Priority ${p} (click to change)"` : 'tabindex="-1"'}>${p}</button>` : "");
 const shortId = (id) => (id.length > 10 ? `${id.slice(0, 8)}…` : id);
 const project = (id) => data.projects.find((p) => p.id === id);
@@ -117,7 +123,13 @@ function render() {
 
   const open = data.items.filter((i) => !i.done);
   const p0 = open.filter((i) => i.priority === "P0").length;
-  $("count").textContent = open.length ? `${open.length} open${p0 ? ` · ${p0} P0` : ""}` : "all clear";
+  const counts = open.length ? `${open.length} open${p0 ? ` · ${p0} P0` : ""}` : "all clear";
+  const now = open.find((i) => i.focusAt);
+  // While an item is in focus, the bar (also in mini mode) shows it instead of the counts.
+  $("count").innerHTML = now ? `<span class="spinner" aria-hidden="true"></span><span class="now-text">${esc(now.text)}</span>` : esc(counts);
+  $("count").classList.toggle("now", !!now);
+  $("count").title = now ? `Working on: ${now.text} (${since(now.focusAt)}) · ${counts}` : "";
+  $("count").dataset.item = now ? now.id : "";
 
   const busy = (p) => editing && (editing.id === p.id) && (editing.kind === "add" || editing.kind === "project");
   const active = data.projects.filter((p) => byProject.get(p.id).length || busy(p));
@@ -173,10 +185,14 @@ function itemHTML(i, metaText) {
     ? `<input class="edit" data-editor="item" value="${esc(i.text)}">`
     : `<div class="text">${prioHTML(i.priority, i.done ? "" : i.id)}${esc(i.text)}</div>`;
   const linker = isEditing && editing.kind === "link" ? `<input class="edit linker" data-editor="link" placeholder="Paste a link or a file path · Enter">` : "";
-  const cls = [i.done ? "done" : "", leaving.has(i.id) ? "leaving" : ""].join(" ");
+  const working = !!i.focusAt && !i.done;
+  const cls = [i.done ? "done" : "", leaving.has(i.id) ? "leaving" : "", working ? "working" : ""].join(" ");
+  const meta = metaText || (working ? `Working on it · ${since(i.focusAt)}` : "");
+  const go = i.done ? "" : `<button class="go" data-focus="${esc(i.id)}" title="${working ? "Stop working on it" : "Start working on it"}" aria-label="${working ? "Stop working on it" : "Start working on it"}">${working ? ICON_PAUSE : ICON_GO}</button>`;
   return `<li class="item ${cls}" data-item="${esc(i.id)}">
-    <button class="check" data-toggle="${esc(i.id)}" aria-label="${i.done ? "Mark as open" : "Mark as done"}" title="${i.done ? "Mark as open" : "Done"}"></button>
-    <div class="body">${text}${linksHTML(i.links)}${linker}${metaText ? `<div class="meta">${esc(metaText)}</div>` : ""}</div>
+    <button class="check ${working ? "spin" : ""}" data-toggle="${esc(i.id)}" aria-label="${i.done ? "Mark as open" : "Mark as done"}" title="${i.done ? "Mark as open" : "Done"}"></button>
+    <div class="body">${text}${linksHTML(i.links)}${linker}${meta ? `<div class="meta">${esc(meta)}</div>` : ""}</div>
+    ${go}
   </li>`;
 }
 
@@ -382,9 +398,11 @@ function wire() {
   const list = $("list");
 
   list.addEventListener("click", async (e) => {
-    const el = e.target.closest("[data-prio],[data-toggle],[data-open],[data-copy],[data-add],[data-section],[data-head],[data-cancel]");
+    const el = e.target.closest("[data-focus],[data-prio],[data-toggle],[data-open],[data-copy],[data-add],[data-section],[data-head],[data-cancel]");
     if (!el) return;
-    if (el.dataset.prio) {
+    if (el.dataset.focus) {
+      await op({ type: "focus", id: el.dataset.focus });
+    } else if (el.dataset.prio) {
       const it = data.items.find((i) => i.id === el.dataset.prio);
       if (it) await op({ type: "priority", id: it.id, priority: { P0: "P1", P1: "" }[it.priority] ?? "P0" });
     } else if (el.dataset.toggle) {
@@ -491,6 +509,15 @@ function wire() {
   // bar
   $("bar").addEventListener("dblclick", (e) => { if (!e.target.closest("button")) setMini(!document.body.classList.contains("mini"), true); });
   $("miniBtn").onclick = () => setMini(!document.body.classList.contains("mini"), true);
+  $("count").addEventListener("click", () => {
+    const id = $("count").dataset.item;
+    if (!id) return;
+    if (document.body.classList.contains("mini")) setMini(false, true);
+    const it = data.items.find((i) => i.id === id);
+    if (it && prefs.collapsed[it.project]) { delete prefs.collapsed[it.project]; savePrefs(); render(); }
+    setTimeout(() => document.querySelector(`[data-item="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }), 80);
+  });
+  setInterval(request, 60 * 1000); // keeps "Working on it · N min" current
   $("menuBtn").onclick = () => window.corner.appMenu();
   $("cornerBtn").onclick = (e) => { e.stopPropagation(); $("picker").hidden = !$("picker").hidden; };
   $("picker").addEventListener("click", (e) => {
@@ -585,6 +612,10 @@ async function runShot(kind) {
   if (kind === "localsort") {
     setDump("ok so I need to ask Maya about the pricing page, urgent. Check the Q4 totals https://example.com/q4\n- book a haircut; also renew the passport");
     await sortDump();
+  }
+  if (kind === "working" || kind === "working-mini") {
+    accept(await window.corner.op({ type: "focus", id: "fx03", on: true }));
+    render();
   }
   if (kind === "edit") { editing = { kind: "project", id: data.projects[1].id }; render(); }
   if (kind === "done") { prefs.doneOpen = true; render(); }

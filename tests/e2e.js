@@ -106,6 +106,16 @@ module.exports = async function e2e(win, file) {
   check("collapse hides items", await js(`return !document.querySelector('[data-item="fx03"]') && JSON.parse(localStorage.getItem("corner.prefs")).collapsed["website"] === true`));
   await js(`document.querySelector('[data-head="website"]').click()`);
 
+  // working on an item: ▶ starts it (one at a time), the bar shows it, done ends it
+  await js(`document.querySelector('[data-focus="fx06"]').click()`);
+  check("▶ starts working on it", await until(() => data().items.find((i) => i.id === "fx06").focusAt));
+  check("its circle spins and the bar shows it", await until(() => js(`return !!document.querySelector('[data-item="fx06"] .check.spin') && document.querySelector("#count .now-text")?.textContent === "Check the totals against the finance sheet"`)));
+  check("it moves to the top of its project", await js(`return document.querySelector('[data-project="q4-report"] .item').dataset.item === "fx06"`));
+  await js(`document.querySelector('[data-focus="fx04"]').click()`);
+  check("starting another one moves the focus", await until(() => { const d = data().items; return d.find((i) => i.id === "fx04").focusAt && !d.find((i) => i.id === "fx06").focusAt; }));
+  await js(`document.querySelector('[data-toggle="fx04"]').click()`);
+  check("done ends it; the bar shows the counts again", await until(() => js(`return !document.querySelector("#count .spinner") && /open/.test(document.getElementById("count").textContent)`)) && !data().items.find((i) => i.id === "fx04").focusAt);
+
   // mini mode and corners
   const area = screen.getDisplayMatching(win.getBounds()).workArea;
   await js(`document.getElementById("miniBtn").click()`);

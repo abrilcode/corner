@@ -49,6 +49,7 @@ Corner finds Claude Code by itself. If Claude Code is installed later, Claude so
 | Add a dump line by line to General | **Add as is** (⇧⌘↵) |
 | Add an item to a project | hover the project, **+** |
 | Set a priority | start the text with `P0 ` or `P1 `, or right-click > Priority; click the tag to change it (P0 → P1 → none) |
+| Start working on an item | hover it, **▶**: its circle spins, and the bar (mini mode too) shows it with the time spent. One at a time; **‖** or ticking it done stops it |
 | Tick an item | click the circle; **Done** in the footer brings it back |
 | Edit an item | double-click its text |
 | Link a doc or a file | drag it from the Finder or a tab from the browser onto the item, or right-click > Add a link |

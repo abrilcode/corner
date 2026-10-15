@@ -19,6 +19,7 @@ python3 $CORNER add-json <<'JSON'
 {"items":[{"project":"website","text":"Ask Maya for the hero photo","priority":"P0","links":[]}]}
 JSON
 python3 $CORNER done <id> [<id> ...]     python3 $CORNER reopen <id>
+python3 $CORNER start <id>               python3 $CORNER stop      # the item being worked on
 python3 $CORNER edit <id> [--text "..."] [--project <id or name>] [--priority P0|P1|none]
 python3 $CORNER link <id> <url or path>  python3 $CORNER delete <id>
 python3 $CORNER project add "Name" [--project-id X] [--dashboard URL] [--keywords "a, b"]
@@ -44,6 +45,7 @@ python3 $CORNER project edit <id> [--name] [--project-id] [--dashboard] [--keywo
 - "What's open?" or "what's on Website?" → `list` (P0 first), then answer with only the items asked about.
 - "Done with X" or "I sent it" → find the item in `list`, run `done <id>`, and confirm in one line. If several items could match, ask which one.
 - "Make X a P0" → `edit <id> --priority P0`. "No priority" → `--priority none`.
+- "I'm starting X" or "working on X now" → `start <id>`: the window shows a slow spinner on that item and its text in the top bar (one item at a time; starting another replaces it). "Stopping" or "taking a break" → `stop`. `done` also ends it.
 - "Link this doc to X" → `link <id> <url>`. File paths can be `~/…`; the window opens them in the Finder's default app.
 - In a project chat, "add an action item for this" → pick the project from the working folder and the conversation (keywords help). Ask only if that is genuinely unclear.
 - A new project with a project ID or a dashboard → `project add` with `--project-id` and `--dashboard`. The window shows the ID (click to copy) and opens the dashboard from the project name.

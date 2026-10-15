@@ -75,6 +75,24 @@ test("add, priority, toggle, edit, link, move, delete, restore", () => {
   assert.equal(d.items.at(-1).priority, "P0");
 });
 
+test("one item in focus at a time; done or stop ends it", () => {
+  const d = fixture();
+  const get = (id) => d.items.find((i) => i.id === id);
+  store.apply(d, { type: "focus", id: "fx03" });
+  assert.ok(get("fx03").focusAt);
+  store.apply(d, { type: "focus", id: "fx06" });
+  assert.equal(get("fx03").focusAt, null);
+  assert.ok(get("fx06").focusAt);
+  store.apply(d, { type: "focus", id: "fx06" }); // clicking again stops it
+  assert.equal(get("fx06").focusAt, null);
+  store.apply(d, { type: "focus", id: "fx04", on: true });
+  store.apply(d, { type: "toggle", id: "fx04" });
+  assert.equal(get("fx04").focusAt, null);
+  store.apply(d, { type: "focus", id: "fx08", on: true }); // a done item cannot be in focus
+  assert.ok(d.items.every((i) => !i.focusAt));
+  assert.equal(store.normalize({ items: [{ text: "x", done: true, focusAt: "2026-01-01T00:00:00Z" }] }).items[0].focusAt, null);
+});
+
 test("new projects from Claude are created once, by name", () => {
   const d = fixture();
   store.apply(d, { type: "add", items: [{ project: "new", newProject: "Offsite", text: "Send agenda" }, { project: "new", newProject: "offsite", text: "Book room" }] });

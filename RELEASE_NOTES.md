@@ -7,6 +7,7 @@ curl -fsSL https://raw.githubusercontent.com/abrilcode/corner/main/install.sh | 
 Or download the `.dmg` for the Mac's chip (`arm64` = Apple silicon, `x64` = Intel), drag Corner to Applications, and allow it once in System Settings > Privacy & Security > Open Anyway (the app is not notarised by Apple).
 
 **In this version**
+- Working on it: ▶ on an item starts it. Its circle spins slowly, the row is tinted, and the top bar (mini mode too) shows it with the time spent. One item at a time; ‖ or ticking it done stops it.
 - An always-on-top mini window with open action items by project, General first.
 - P0 / P1 priorities (click the tag to change it, or start an item with "P0 ").
 - Brain dump: sorted by Claude when Claude Code is installed, otherwise by project names and keywords; a review step before anything is added.

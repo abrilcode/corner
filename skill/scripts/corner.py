@@ -7,6 +7,7 @@ The Corner window watches the same file and updates by itself.
   corner.py add "text" [--project P] [--priority P0|P1] [--link URL ...]
   corner.py add-json            < {"items":[{"project":"website","text":"...","priority":"P0","links":[]}]}
   corner.py done ID [ID ...]    corner.py reopen ID
+  corner.py start ID            corner.py stop        (the item being worked on; one at a time)
   corner.py edit ID [--text T] [--project P] [--priority P0|P1|none]
   corner.py link ID URL         corner.py delete ID
   corner.py project add NAME [--project-id X] [--dashboard URL] [--keywords K]
@@ -85,6 +86,7 @@ def normalize(d):
             "project": s(i.get("project")) if s(i.get("project")) in ids else "general",
             "text": s(i.get("text")), "priority": prio(i.get("priority")),
             "links": norm_links(i.get("links")), "done": done,
+            "focusAt": s(i.get("focusAt")) or None if not done else None,
             "created": s(i.get("created")) or now(),
             "doneAt": (s(i.get("doneAt")) or now()) if done else None,
             "source": s(i.get("source")) or "app",
@@ -169,7 +171,7 @@ def add_items(d, items, source="claude-code"):
             continue
         item = {"id": secrets.token_hex(4), "project": p["id"], "text": text,
                 "priority": prio(raw.get("priority")) or pr,
-                "links": norm_links(list(raw.get("links") or []) + links), "done": False,
+                "links": norm_links(list(raw.get("links") or []) + links), "done": False, "focusAt": None,
                 "created": now(), "doneAt": None, "source": source}
         d["items"].append(item)
         added.append(item)
@@ -190,7 +192,7 @@ def show(d, done=False):
             by[i["project"]].append(i)
     rank = {"P0": 0, "P1": 1}
     for lst in by.values():
-        lst.sort(key=lambda i: rank.get(i["priority"], 2))
+        lst.sort(key=lambda i: -1 if i.get("focusAt") else rank.get(i["priority"], 2))
     for p in d["projects"]:
         head = p["name"] + f"  [{p['id']}]"
         if p["projectId"]:
@@ -201,7 +203,8 @@ def show(d, done=False):
         for i in by[p["id"]]:
             links = "  " + " ".join(l["url"] for l in i["links"]) if i["links"] else ""
             tag = f"[{i['priority']}] " if i["priority"] else ""
-            print(f"  {'x' if i['done'] else '-'} {tag}{i['text']}  ({i['id']}){links}")
+            work = "  << working on it since " + i["focusAt"][11:16] + " UTC" if i.get("focusAt") else ""
+            print(f"  {'x' if i['done'] else '-'} {tag}{i['text']}  ({i['id']}){links}{work}")
         if not by[p["id"]]:
             print("  (nothing)" if not done else "")
     print(f"\nFile: {FILE}")
@@ -216,6 +219,8 @@ def main():
     sub.add_parser("add-json")
     a = sub.add_parser("done"); a.add_argument("ids", nargs="+")
     a = sub.add_parser("reopen"); a.add_argument("ids", nargs="+")
+    a = sub.add_parser("start"); a.add_argument("id")
+    sub.add_parser("stop")
     a = sub.add_parser("edit"); a.add_argument("id"); a.add_argument("--text"); a.add_argument("--project"); a.add_argument("--priority")
     a = sub.add_parser("link"); a.add_argument("id"); a.add_argument("url")
     a = sub.add_parser("delete"); a.add_argument("id")
@@ -247,7 +252,16 @@ def main():
             it = item(d, ref)
             it["done"] = args.cmd == "done"
             it["doneAt"] = now() if it["done"] else None
+            if it["done"]:
+                it["focusAt"] = None
             out.append(it)
+    elif args.cmd in ("start", "stop"):
+        target = item(d, args.id) if args.cmd == "start" else None
+        out = [i for i in d["items"] if i.get("focusAt")] if args.cmd == "stop" else [target]
+        for i in d["items"]:
+            i["focusAt"] = None
+        if target and not target["done"]:
+            target["focusAt"] = now()
     elif args.cmd == "edit":
         it = item(d, args.id)
         if args.text:
