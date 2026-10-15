@@ -1,6 +1,6 @@
 # Corner
 
-A mini window for action items that stays on top of everything: the browser, the terminal, the editor, full-screen apps, every desktop. Items are grouped by project, with General first. Each project shows its ID and opens its dashboard. A brain dump becomes a clean list: Claude sorts it when Claude Code is installed, and project keywords sort it when it is not.
+A mini window for action items that stays on top of everything: the browser, the terminal, the editor, full-screen apps, every desktop. Items are grouped by project, with General first, and a project's name opens its dashboard. A brain dump becomes a clean list: Claude sorts it when Claude Code is installed, and project keywords sort it when it is not.
 
 | The list | A brain dump, sorted | Dark |
 |---|---|---|
@@ -31,7 +31,7 @@ Corner opens straight away, opens at every login, and comes back each morning. T
 
 ## With or without Claude Code
 
-Everything works without Claude Code: projects, items, P0 and P1, links, project IDs and dashboards. The only difference is how a brain dump is sorted.
+Everything works without Claude Code: projects, items, P0 and P1, links and dashboards. The only difference is how a brain dump is sorted.
 
 | | Without Claude Code | With [Claude Code](https://claude.com/claude-code) |
 |---|---|---|
@@ -54,8 +54,8 @@ Corner finds Claude Code by itself. If Claude Code is installed later, Claude so
 | Edit an item | double-click its text |
 | Link a doc or a file | drag it from the Finder or a tab from the browser onto the item, or right-click > Add a link |
 | Open a project's dashboard | click the project name (↗) |
-| Copy a project ID | click the grey ID next to the name |
-| Add or edit a project (name, ID, dashboard, keywords) | **New project** in the footer, or right-click a project > Edit project |
+| Add or edit a project (name, dashboard, keywords) | **New project** in the footer, or right-click a project > Edit project |
+| Project IDs (for work setups that track one) | off by default; menu-bar icon > **Project IDs** adds an ID field to each project and a copy icon next to its name |
 | Move the window | drag the bar (it sticks to the edges), or the corner button |
 | Mini | the – button, or double-click the bar |
 

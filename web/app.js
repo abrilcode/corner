@@ -64,7 +64,10 @@ const since = (iso) => {
   return min < 1 ? "just started" : min < 60 ? `${min} min` : `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")}`;
 };
 const prioHTML = (p, id) => (p ? `<button class="prio ${p.toLowerCase()}" ${id ? `data-prio="${esc(id)}" title="Priority ${p} (click to change)"` : 'tabindex="-1"'}>${p}</button>` : "");
-const shortId = (id) => (id.length > 10 ? `${id.slice(0, 8)}…` : id);
+// Project IDs are a work option (menu-bar icon > Project IDs), off by default.
+const showIds = () => !!(data && data.settings && data.settings.projectIds);
+const ICON_COPY = '<svg viewBox="0 0 12 12"><rect x="4" y="4" width="6.2" height="6.2" rx="1.2"/><path d="M8 2.6V2.4A1 1 0 0 0 7 1.4H2.4a1 1 0 0 0-1 1V7a1 1 0 0 0 1 1h.2"/></svg>';
+const ICON_COPIED = '<svg viewBox="0 0 12 12"><path d="M2.6 6.3l2.2 2.2 4.6-4.9"/></svg>';
 const project = (id) => data.projects.find((p) => p.id === id);
 const recentDone = () => {
   const since = Date.now() - DONE_DAYS * 864e5;
@@ -166,7 +169,7 @@ function projectHTML(p, items, isQuiet = false) {
   const name = p.dashboard
     ? `<a class="name" data-open="${esc(p.dashboard)}" title="Open the dashboard: ${esc(p.dashboard)}">${esc(p.name)}<span class="arrow">↗</span></a>`
     : `<span class="name">${esc(p.name)}</span>`;
-  const pid = p.projectId ? `<button class="pid" data-copy="${esc(p.projectId)}" title="Copy project ID ${esc(p.projectId)}">${esc(shortId(p.projectId))}</button>` : "";
+  const pid = p.projectId && showIds() ? `<button class="pid" data-copy="${esc(p.projectId)}" title="Copy project ID ${esc(p.projectId)}" aria-label="Copy project ID">${ICON_COPY}</button>` : "";
   const n = items.filter((i) => !i.done).length;
   const adding = editing && editing.kind === "add" && editing.id === p.id;
   return `<section class="proj ${open || adding ? "open" : ""}" data-project="${esc(p.id)}">
@@ -200,7 +203,7 @@ function formHTML(p) {
   const v = p || { name: "", projectId: "", dashboard: "", keywords: "" };
   return `<form class="form" data-form="${p ? esc(p.id) : ""}">
     <label>Name<input name="name" value="${esc(v.name)}" required></label>
-    <label>Project ID<input name="projectId" class="mono" value="${esc(v.projectId)}" placeholder="optional"></label>
+    ${showIds() ? `<label>Project ID<input name="projectId" class="mono" value="${esc(v.projectId)}" placeholder="optional"></label>` : ""}
     <label>Dashboard<input name="dashboard" value="${esc(v.dashboard)}" placeholder="https://… (opens from the name)"></label>
     <label>Keywords for Claude<input name="keywords" value="${esc(v.keywords)}" placeholder="other names, people, tools"></label>
     <div class="row"><button type="button" class="btn" data-cancel>Cancel</button><button type="submit" class="btn primary">${p ? "Save" : "Add project"}</button></div>
@@ -422,9 +425,10 @@ function wire() {
       if (res && !res.ok && res.error) toast(res.error);
     } else if (el.dataset.copy) {
       await window.corner.copy(el.dataset.copy);
-      const was = el.textContent;
-      el.textContent = "copied";
-      setTimeout(() => { el.textContent = was; }, 1100);
+      el.innerHTML = ICON_COPIED;
+      el.classList.add("copied");
+      el.title = "Copied";
+      setTimeout(() => { el.innerHTML = ICON_COPY; el.classList.remove("copied"); el.title = `Copy project ID ${el.dataset.copy}`; }, 1200);
     } else if (el.dataset.add) {
       startEdit("add", el.dataset.add);
     } else if (el.dataset.section) {

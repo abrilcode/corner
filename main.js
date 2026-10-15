@@ -37,6 +37,13 @@ let quitting = false;
 let job = null; // the running Claude sort, if any
 const log = (...a) => { if (TEST) console.log("[corner]", ...a); };
 
+// Tests and screenshots never touch the real clipboard: they get a private one.
+let testClipboard = "";
+function copyText(text) {
+  if (TEST) testClipboard = String(text || "");
+  else clipboard.writeText(String(text || ""));
+}
+
 // ---- window state (position, mini mode, theme) --------------------------
 
 const stateFile = () => path.join(app.getPath("userData"), "window.json");
@@ -243,7 +250,7 @@ function itemMenu(id) {
     ...(it.links.length ? [{ label: "Remove link", submenu: it.links.map((l) => ({ label: l.label || l.url, click: () => send("changed", change({ type: "unlink", id, url: l.url })) })) }] : []),
     { label: "Priority", submenu: priorityMenu(it.priority, (p) => send("changed", change({ type: "priority", id, priority: p }))) },
     { label: "Move to", submenu: projectSubmenu(d, it.project, (pid) => send("changed", change({ type: "edit", id, project: pid }))) },
-    { label: "Copy text", click: () => clipboard.writeText([it.text, ...it.links.map((l) => l.url)].join("\n")) },
+    { label: "Copy text", click: () => copyText([it.text, ...it.links.map((l) => l.url)].join("\n")) },
     { type: "separator" },
     { label: it.done ? "Mark as open" : "Mark as done", click: () => send("changed", change({ type: "toggle", id })) },
     { label: "Delete", click: () => send("deleted", { item: it, ...change({ type: "delete", id }) }) },
@@ -261,7 +268,7 @@ function projectMenu(id) {
     { label: "Add an item", click: () => send("add") },
     { label: "Edit project…", click: () => send("edit-project") },
     ...(p.dashboard ? [{ label: "Open dashboard", click: () => openTarget(p.dashboard) }] : []),
-    ...(p.projectId ? [{ label: "Copy project ID", click: () => clipboard.writeText(p.projectId) }] : []),
+    ...(p.projectId && d.settings.projectIds ? [{ label: "Copy project ID", click: () => copyText(p.projectId) }] : []),
     { type: "separator" },
     { label: "Move up", enabled: i > 1, click: () => send("changed", change({ type: "project-move", id, by: -1 })) },
     { label: "Move down", enabled: i > 0 && i < d.projects.length - 1, click: () => send("changed", change({ type: "project-move", id, by: 1 })) },
@@ -297,12 +304,19 @@ function proposalMenu(index, current, prio) {
 
 function trayMenu() {
   const login = app.getLoginItemSettings().openAtLogin;
+  const { data: d } = readData();
+  const ids = !!(d && d.settings.projectIds);
   const corners = [["Top left", "top-left"], ["Top right", "top-right"], ["Bottom left", "bottom-left"], ["Bottom right", "bottom-right"]];
   return Menu.buildFromTemplate([
     { label: win && win.isVisible() ? "Hide Corner" : "Show Corner", accelerator: SHORTCUT, click: toggleVisible },
     { label: "Write a brain dump", click: showAndFocus },
     { label: "Mini", type: "checkbox", checked: ui.mini, click: (m) => setMini(m.checked) },
     { label: "Move to", submenu: corners.map(([label, c]) => ({ label, click: () => moveTo(c) })) },
+    {
+      // Off by default: a project ID (with a copy button) is for work setups that track one.
+      label: "Project IDs", type: "checkbox", checked: ids,
+      click: (m) => win.webContents.send("corner:action", { action: "changed", ...change({ type: "setting", key: "projectIds", value: m.checked }) }),
+    },
     { label: "Appearance", submenu: [["Match the system", "system"], ["Light", "light"], ["Dark", "dark"]].map(([label, t]) => ({ label, type: "radio", checked: ui.theme === t, click: () => setTheme(t) })) },
     { type: "separator" },
     { label: "Show the list file", click: () => shell.showItemInFolder(DATA_FILE) },
@@ -387,7 +401,7 @@ ipcMain.handle("corner:sort", async (_e, dump) => {
 });
 ipcMain.handle("corner:sort-cancel", () => { if (job) job.cancel(); job = null; return true; });
 ipcMain.handle("corner:open", (_e, target) => openTarget(target));
-ipcMain.handle("corner:copy", (_e, text) => { clipboard.writeText(String(text || "")); return true; });
+ipcMain.handle("corner:copy", (_e, text) => { copyText(text); return true; });
 ipcMain.on("corner:mini", (_e, on) => setMini(on));
 ipcMain.on("corner:move", (_e, corner) => { if (place.CORNERS.includes(corner)) moveTo(corner); });
 ipcMain.on("corner:menu-item", (_e, id) => itemMenu(id));
@@ -466,7 +480,7 @@ app.whenReady().then(() => {
 
   if (TEST && process.env.CORNER_E2E) {
     win.webContents.once("did-finish-load", async () => {
-      const failed = await require(process.env.CORNER_E2E)(win, DATA_FILE).catch((e) => { console.error(e); return 1; });
+      const failed = await require(process.env.CORNER_E2E)(win, DATA_FILE, { copied: () => testClipboard }).catch((e) => { console.error(e); return 1; });
       quitting = true;
       app.exit(failed ? 1 : 0);
     });

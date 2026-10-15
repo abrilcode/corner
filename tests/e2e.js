@@ -2,9 +2,10 @@
 // here). Run: tools/e2e.sh   It uses a copy of tests/fixture.json and makes
 // one real "Sort with Claude" call (about one cent).
 const fs = require("node:fs");
-const { clipboard, screen } = require("electron");
+const { screen } = require("electron");
 
-module.exports = async function e2e(win, file) {
+// `test.copied()` is the app's private test clipboard; the real one is never touched.
+module.exports = async function e2e(win, file, test) {
   const js = (code) => win.webContents.executeJavaScript(`(async () => { ${code} })()`);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const data = () => JSON.parse(fs.readFileSync(file, "utf8"));
@@ -79,10 +80,8 @@ module.exports = async function e2e(win, file) {
   await wait(500); // let the file watcher's redraw after the last save pass
   await js(`document.querySelector('[data-copy="pj_4f9a2c71e0b3d5a8"]').click()`);
   await wait(200);
-  check("project ID shows copied", await js(`return document.querySelector('[data-copy="pj_4f9a2c71e0b3d5a8"]').textContent === "copied"`));
-  const readable = typeof clipboard.readText() === "string";
-  if (readable) check("project ID copies in full", clipboard.readText() === "pj_4f9a2c71e0b3d5a8");
-  else console.log("SKIP clipboard not readable in this environment");
+  check("project ID copy icon confirms", await js(`return document.querySelector('[data-copy="pj_4f9a2c71e0b3d5a8"]').classList.contains("copied")`));
+  check("project ID copies in full", test.copied() === "pj_4f9a2c71e0b3d5a8");
 
   // links dropped from the browser attach to an item
   await js(`const dt = new DataTransfer(); dt.setData("text/uri-list", "https://docs.google.com/spreadsheets/d/drop"); document.querySelector('[data-item="fx03"]').dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }))`);
@@ -95,6 +94,18 @@ module.exports = async function e2e(win, file) {
   await until(() => js(`return !!document.querySelector('[data-prio="fx03"].p1')`));
   await js(`document.querySelector('[data-prio="fx03"]').click()`);
   check("P1 tag click → none", await until(() => data().items.find((i) => i.id === "fx03").priority === ""));
+
+  // full project names, never cut
+  check("project names are not cut", await js(`return [...document.querySelectorAll(".head .name")].every((e) => e.scrollWidth <= e.clientWidth + 1 && getComputedStyle(e).textOverflow !== "ellipsis")`));
+
+  // project IDs can be switched off (the default for new lists)
+  await js(`await window.corner.op({ type: "setting", key: "projectIds", value: false })`);
+  check("IDs off: no copy icons", await until(() => js(`return !document.querySelector(".pid")`)));
+  win.webContents.send("corner:action", { action: "edit-project", id: "website" });
+  check("IDs off: the form has no Project ID field", await until(() => js(`return !!document.querySelector(".form") && !document.querySelector('.form input[name=projectId]')`)));
+  await js(`document.querySelector(".form [data-cancel]").click()`);
+  await js(`await window.corner.op({ type: "setting", key: "projectIds", value: true })`);
+  check("IDs on again", await until(() => js(`return !!document.querySelector('[data-copy="pj_4f9a2c71e0b3d5a8"]')`)));
 
   // menu actions (the native context menu sends these)
   win.webContents.send("corner:action", { action: "edit-project", id: "website" });

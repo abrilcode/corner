@@ -170,22 +170,26 @@ main::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; bor
 .proj + .proj { margin-top: 2px; }
 .head {
   display: flex; align-items: center; gap: 6px;
-  height: 28px; padding: 0 6px 0 4px; border-radius: var(--r);
+  min-height: 28px; padding: 4px 6px 4px 4px; border-radius: var(--r);
 }
 .head:hover { background: var(--hover); }
 .head.drop { background: var(--accent-soft); }
 .chev { width: 16px; height: 16px; display: grid; place-items: center; color: var(--ink-3); flex: 0 0 16px; }
 .chev svg { width: 9px; height: 9px; stroke: currentColor; fill: none; stroke-width: 1.5; transition: transform 0.15s; }
 .proj.open .chev svg { transform: rotate(90deg); }
-.name { font-weight: 500; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+/* Full project names: a long one wraps to a second line instead of being cut. */
+.name { font-weight: 500; font-size: 12.5px; line-height: 1.3; min-width: 0; flex: 0 1 auto; overflow-wrap: anywhere; }
 a.name { color: inherit; text-decoration: none; cursor: pointer; }
 a.name:hover { text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
 a.name .arrow { font-weight: 300; color: var(--ink-3); margin-left: 3px; font-size: 11px; }
 .pid {
-  font: 400 10px/1 var(--mono); color: var(--ink-3); letter-spacing: -0.01em;
-  padding: 3px 4px; border-radius: 4px; white-space: nowrap; flex: 0 40 auto; min-width: 0; overflow: hidden; text-overflow: clip;
+  width: 20px; height: 20px; flex: 0 0 20px; border-radius: 4px;
+  display: grid; place-items: center; color: var(--ink-3);
 }
+.pid svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
 .pid:hover { color: var(--ink); background: var(--paper); }
+.pid.copied { color: var(--accent); }
+.pid.copied svg { stroke-width: 1.5; }
 .head .fill { flex: 1; min-width: 6px; align-self: stretch; }
 .head .n { color: var(--ink-3); font-size: 11.5px; font-weight: 400; min-width: 12px; text-align: right; }
 .head .plus { color: var(--ink-3); width: 20px; height: 20px; border-radius: 4px; visibility: hidden; font-size: 15px; line-height: 1; }

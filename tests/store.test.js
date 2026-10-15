@@ -15,6 +15,7 @@ test("first load writes the seed: General only, with the default model", () => {
   assert.ok(fs.existsSync(f));
   assert.deepEqual(d.projects.map((p) => p.id), ["general"]);
   assert.equal(d.settings.model, "sonnet");
+  assert.ok(!d.settings.projectIds, "project IDs are off for new lists");
 });
 
 test("normalize repairs a hand-edited file", () => {
@@ -91,6 +92,14 @@ test("one item in focus at a time; done or stop ends it", () => {
   store.apply(d, { type: "focus", id: "fx08", on: true }); // a done item cannot be in focus
   assert.ok(d.items.every((i) => !i.focusAt));
   assert.equal(store.normalize({ items: [{ text: "x", done: true, focusAt: "2026-01-01T00:00:00Z" }] }).items[0].focusAt, null);
+});
+
+test("only known settings can be switched", () => {
+  const d = fixture();
+  store.apply(d, { type: "setting", key: "projectIds", value: false });
+  assert.equal(d.settings.projectIds, false);
+  assert.throws(() => store.apply(d, { type: "setting", key: "model", value: "x" }));
+  assert.equal(d.settings.model, "sonnet");
 });
 
 test("new projects from Claude are created once, by name", () => {
