@@ -1,0 +1,3 @@
+#!/bin/zsh
+# A `node` for build tools on a machine without Node: Electron's own runtime.
+exec env ELECTRON_RUN_AS_NODE=1 ELECTRON_NO_ASAR=1 "${0:A:h}/../../node_modules/electron/dist/Electron.app/Contents/MacOS/Electron" "$@"

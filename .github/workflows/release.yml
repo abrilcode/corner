@@ -1,0 +1,39 @@
+name: release
+
+# Tests and builds Corner for macOS (Apple silicon and Intel). A tag like
+# v1.2.0 publishes the zip (used by install.sh) and the dmg as a release.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install --no-audit --no-fund
+      - run: node --test tests/*.test.js
+      - run: npx electron-builder --mac --publish never
+        env:
+          # No paid signing certificate: the app is ad-hoc signed.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: corner-mac
+          path: |
+            dist/Corner-mac-*.zip
+            dist/Corner-mac-*.dmg
+          if-no-files-found: error
+      - if: startsWith(github.ref, 'refs/tags/')
+        run: gh release create "$GITHUB_REF_NAME" dist/Corner-mac-*.zip dist/Corner-mac-*.dmg --title "Corner $GITHUB_REF_NAME" --notes-file RELEASE_NOTES.md
+        env:
+          GH_TOKEN: ${{ github.token }}

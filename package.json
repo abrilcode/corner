@@ -1,0 +1,36 @@
+{
+  "name": "corner",
+  "productName": "Corner",
+  "version": "1.1.0",
+  "description": "A small always-on-top window with the open action items of every project, sorted by Claude Code",
+  "author": "Abril Herrlein",
+  "license": "MIT",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.js",
+    "dist": "electron-builder --mac --publish never"
+  },
+  "build": {
+    "appId": "com.abrilherrlein.corner",
+    "productName": "Corner",
+    "copyright": "Copyright © 2026 Abril Herrlein",
+    "npmRebuild": false,
+    "files": ["main.js", "preload.js", "lib/**", "web/**", "tray/**", "skill/**", "package.json"],
+    "directories": { "output": "dist", "buildResources": "build" },
+    "mac": {
+      "target": [{ "target": "zip", "arch": ["arm64", "x64"] }, { "target": "dmg", "arch": ["arm64", "x64"] }],
+      "artifactName": "Corner-mac-${arch}.${ext}",
+      "category": "public.app-category.productivity",
+      "extendInfo": { "LSUIElement": true },
+      "identity": "-",
+      "hardenedRuntime": false
+    },
+    "dmg": { "title": "Corner" }
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  }
+}

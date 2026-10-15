@@ -1,0 +1,9 @@
+#!/bin/zsh
+# electron-builder asks `npm list` for the app's runtime dependencies. Corner
+# has none, so on a machine without npm this answers for it.
+if [[ "$1" == "list" ]]; then
+  print '{"name":"corner","version":"1.0.0","dependencies":{}}'
+  exit 0
+fi
+print -u2 "npm is not installed; tools/bin/npm only answers 'npm list'."
+exit 1

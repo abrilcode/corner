@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "general",
+      "name": "General",
+      "projectId": "",
+      "dashboard": "",
+      "keywords": "anything not tied to a project, errands, admin, personal"
+    },
+    {
+      "id": "website",
+      "name": "Website relaunch",
+      "projectId": "pj_4f9a2c71e0b3d5a8",
+      "dashboard": "https://example.com/website-dashboard",
+      "keywords": "website, site, landing page, hero, pricing page, Maya"
+    },
+    {
+      "id": "q4-report",
+      "name": "Q4 report",
+      "projectId": "pj_77d1e5a90c42b6f1",
+      "dashboard": "",
+      "keywords": "Q4, report, totals, finance sheet"
+    },
+    {
+      "id": "hiring",
+      "name": "Hiring",
+      "projectId": "",
+      "dashboard": "",
+      "keywords": "candidates, interviews, recruiting"
+    },
+    {
+      "id": "research",
+      "name": "Research",
+      "projectId": "",
+      "dashboard": "",
+      "keywords": "papers, reading, survey"
+    }
+  ],
+  "items": [
+    {
+      "id": "fx01",
+      "project": "general",
+      "text": "Book the dentist for next week",
+      "priority": "",
+      "links": [],
+      "done": false,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": null,
+      "source": "app"
+    },
+    {
+      "id": "fx02",
+      "project": "general",
+      "text": "Renew the library card",
+      "priority": "",
+      "links": [],
+      "done": false,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": null,
+      "source": "app"
+    },
+    {
+      "id": "fx03",
+      "project": "website",
+      "text": "Ask Maya for the new hero photo",
+      "priority": "P0",
+      "links": [],
+      "done": false,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": null,
+      "source": "app"
+    },
+    {
+      "id": "fx04",
+      "project": "website",
+      "text": "Remove the old pricing page",
+      "priority": "",
+      "links": [
+        {
+          "url": "https://example.com/pricing",
+          "label": ""
+        }
+      ],
+      "done": false,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": null,
+      "source": "app"
+    },
+    {
+      "id": "fx05",
+      "project": "website",
+      "text": "Review the launch plan before Monday",
+      "priority": "",
+      "links": [
+        {
+          "url": "https://docs.google.com/document/d/example/edit",
+          "label": ""
+        },
+        {
+          "url": "~/Documents/launch-plan",
+          "label": ""
+        }
+      ],
+      "done": false,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": null,
+      "source": "app"
+    },
+    {
+      "id": "fx06",
+      "project": "q4-report",
+      "text": "Check the totals against the finance sheet",
+      "priority": "",
+      "links": [],
+      "done": false,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": null,
+      "source": "app"
+    },
+    {
+      "id": "fx07",
+      "project": "q4-report",
+      "text": "Send the draft to the team",
+      "priority": "P1",
+      "links": [
+        {
+          "url": "https://docs.google.com/spreadsheets/d/example/edit",
+          "label": ""
+        }
+      ],
+      "done": false,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": null,
+      "source": "app"
+    },
+    {
+      "id": "fx08",
+      "project": "hiring",
+      "text": "Schedule the second interviews",
+      "priority": "",
+      "links": [],
+      "done": true,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": "2026-10-15T09:00:00.000Z",
+      "source": "app"
+    },
+    {
+      "id": "fx09",
+      "project": "general",
+      "text": "Reply to the landlord",
+      "priority": "",
+      "links": [],
+      "done": true,
+      "created": "2026-10-15T09:00:00.000Z",
+      "doneAt": "2026-10-15T09:00:00.000Z",
+      "source": "app"
+    }
+  ],
+  "settings": {
+    "model": "sonnet"
+  }
+}

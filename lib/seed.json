@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "general",
+      "name": "General",
+      "projectId": "",
+      "dashboard": "",
+      "keywords": "anything not tied to a project, errands, admin, personal"
+    }
+  ],
+  "items": [],
+  "settings": {
+    "model": "sonnet"
+  }
+}

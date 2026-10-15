@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.DS_Store
+# Licensed fonts that may not be redistributed (Aeonik): used when present, never committed
+web/fonts/private/

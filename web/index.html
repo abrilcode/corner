@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; script-src 'self'">
+  <title>Corner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="bar" id="bar">
+      <span class="mark">Corner</span>
+      <span class="count" id="count"></span>
+      <span class="spacer"></span>
+      <button class="icon" id="cornerBtn" title="Move to a corner" aria-label="Move to a corner">
+        <svg viewBox="0 0 14 14"><rect x="1.5" y="1.5" width="11" height="11" rx="2"/><rect x="8" y="3" width="3" height="2.5" rx="0.6" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button class="icon" id="miniBtn" title="Mini (or double-click the bar)" aria-label="Mini">
+        <svg viewBox="0 0 14 14"><path d="M3 7h8"/></svg>
+      </button>
+      <button class="icon" id="menuBtn" title="More" aria-label="More">
+        <svg viewBox="0 0 14 14"><circle cx="3" cy="7" r="0.6" fill="currentColor"/><circle cx="7" cy="7" r="0.6" fill="currentColor"/><circle cx="11" cy="7" r="0.6" fill="currentColor"/></svg>
+      </button>
+    </header>
+    <div class="picker" id="picker" hidden>
+      <button data-c="top-left" title="Top left" aria-label="Top left"></button>
+      <button data-c="top-right" title="Top right" aria-label="Top right"></button>
+      <button data-c="bottom-left" title="Bottom left" aria-label="Bottom left"></button>
+      <button data-c="bottom-right" title="Bottom right" aria-label="Bottom right"></button>
+    </div>
+
+    <main id="main">
+      <section class="dump" id="dump">
+        <textarea id="dumpText" rows="1" placeholder="Brain dump. Claude sorts it by project." spellcheck="true"></textarea>
+        <div class="dump-actions" id="dumpActions" hidden>
+          <button class="btn primary" id="sortBtn">Sort with Claude</button>
+          <button class="btn" id="asIsBtn" title="Each line becomes an item in General">Add as is</button>
+          <span class="hint">⌘↵</span>
+        </div>
+        <div class="status" id="sorting" hidden><span>Sorting with Claude</span><span class="line"></span><button class="btn" id="cancelSort">Cancel</button></div>
+        <div class="error" id="dumpError" hidden></div>
+      </section>
+      <section class="review" id="review" hidden></section>
+      <div id="list"></div>
+    </main>
+
+    <footer class="foot" id="foot">
+      <button class="btn-text" id="doneBtn"></button>
+      <span class="fill"></span>
+      <button class="btn-text" id="newProjectBtn">New project</button>
+    </footer>
+    <div class="toast" id="toast" hidden></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
